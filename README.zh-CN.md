@@ -17,18 +17,9 @@
 
 ## 实机演示
 
-> **截图占位 1：推理强度设置页**
->
-> 当前仓库中的实机截图为 `assets/reasoning-settings-page.png`：
->
-> ![推理强度设置页](./assets/reasoning-settings-page.png)
+![推理强度设置页](./assets/reasoning-settings-page.png)
 
-> **截图占位 2：会话中的模型与推理强度选择器**
->
-> 当前仓库中的实机截图为 `assets/model-effort-picker.png`：
->
->
-> ![模型与推理强度选择器](./assets/model-effort-picker.png)
+![模型与推理强度选择器](./assets/model-effort-picker.png)
 
 ## 安装
 
@@ -102,18 +93,6 @@ pnpm dsh web
 ```
 
 包内的 `dsh.bundle` 声明会让 DSH 自动把插件加入 Web profile；两种安装方式都不需要手动编辑 `cordis.patch.yml`。Web 默认使用 `http://127.0.0.1:3080`；只有该端口已被占用，或显式传入其他端口时，才会使用不同端口。
-
-### 从 0.3.0 或更早版本迁移
-
-旧版教程要求把 `ui-settings-reasoning` 手动追加到 profile 的 `cordis.patch.yml`。新版安装前，请从该文件中删除下面这段旧挂载项；只需迁移一次，之后由 bundle 自动维护：
-
-```yaml
-- insert:
-    - id: ui-settings-reasoning
-      name: dsh-reasoning-settings
-```
-
-若文件中除注释外只剩该挂载项，删除后将内容改为 `[]`。
 
 ### 升级
 

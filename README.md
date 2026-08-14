@@ -19,23 +19,9 @@ A [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) Web settin
 
 ## Live demo
 
-> **Screenshot placeholder 1: Reasoning effort settings page**
->
-> The current repository image is `assets/reasoning-settings-page.png`:
->
-> ![Reasoning effort settings page](./assets/reasoning-settings-page.png)
+![Reasoning effort settings page](./assets/reasoning-settings-page.png)
 
-> **Screenshot placeholder 2: Model and reasoning effort picker in a session**
->
-> The current repository image is `assets/model-effort-picker.png`:
->
-> ![Model and reasoning effort picker](./assets/model-effort-picker.png)
-
-> **Screenshot placeholder 3: Subagent call with a selected provider, model, and effort**
->
-> Save the image as `assets/screenshots/subagent-routing-demo.png`, then replace this block with:
->
-> `![Subagent routing demo](./assets/screenshots/subagent-routing-demo.png)`
+![Model and reasoning effort picker](./assets/model-effort-picker.png)
 
 ## Installation
 
@@ -109,18 +95,6 @@ pnpm dsh web
 ```
 
 The package's `dsh.bundle` declaration adds the plugin to the Web profile automatically. Neither method requires editing `cordis.patch.yml`. Web listens on `http://127.0.0.1:3080` by default; it uses another port only when the default is occupied or you explicitly select one.
-
-### Migrating from 0.3.0 or earlier
-
-The old instructions manually appended `ui-settings-reasoning` to the profile's `cordis.patch.yml`. Before installing this version, remove this old mount entry from that file once; the bundle manages it afterward:
-
-```yaml
-- insert:
-    - id: ui-settings-reasoning
-      name: dsh-reasoning-settings
-```
-
-If no entries remain besides comments, replace the removed entry with `[]`.
 
 ### Upgrade
 
