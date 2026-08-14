@@ -19,67 +19,49 @@ A [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) Web settin
 
 ## Installation
 
-Run the following steps in PowerShell — copy and paste as-is.
-
-1. Run `dsh web` once, confirm Harness opens, then stop it (this creates the Web profile directory).
-
-2. Clone this repository to `D:\dsh-reasoning-settings`:
+Install and enable the plugin from GitHub with one PowerShell command:
 
 ```powershell
-git clone https://github.com/JuneLearn/dsh-reasoning-settings.git D:\dsh-reasoning-settings
+npx -p @deepseek-ai/dsh dsh plugin --profile web add github:JuneLearn/dsh-reasoning-settings
 ```
 
-3. Install the plugin into your DSH Web profile:
+The package's `dsh.bundle` declaration adds the plugin to the Web profile automatically; do not edit `cordis.patch.yml`. After installation, run `dsh web` and open **Settings > Reasoning effort**.
+
+To install a local checkout, use its actual path instead:
 
 ```powershell
-dsh plugin --profile web add "D:\dsh-reasoning-settings"
+npx -p @deepseek-ai/dsh dsh plugin --profile web add "D:\dsh-reasoning-settings"
 ```
-
-4. Register the plugin in the profile's patch layer (skips if already present, safe to re-run):
-
-```powershell
-$patch = "$env:USERPROFILE\.dsh\profiles\web\cordis.patch.yml"
-if (-not (Select-String -Path $patch -Pattern 'dsh-reasoning-settings' -Quiet)) {
-  Add-Content $patch "`n- insert:`n    - id: ui-settings-reasoning`n      name: dsh-reasoning-settings"
-}
-```
-
-5. Run `dsh web` again and open **Settings > Reasoning effort**.
 
 `dsh web` listens on `http://127.0.0.1:3080` by default. Ports are unrelated to this plugin; another port (e.g. `3081`) is only used when the default one is already taken or you explicitly pass `--port 3081`.
 
-### Upgrade
+### Migrating from 0.3.0 or earlier
 
-To upgrade later, pull the latest code in the cloned directory and run the install command again — no uninstall is needed:
+The old instructions manually appended `ui-settings-reasoning` to the profile's `cordis.patch.yml`. Before installing this version, remove this old mount entry from that file once; the bundle manages it afterward:
 
-```powershell
-git -C D:\dsh-reasoning-settings pull
-dsh plugin --profile web add "D:\dsh-reasoning-settings"
+```yaml
+- insert:
+    - id: ui-settings-reasoning
+      name: dsh-reasoning-settings
 ```
 
-pnpm overwrites the previous entry, and the step 4 registration command automatically skips an already-present entry.
+If no entries remain besides comments, replace the removed entry with `[]`.
+
+### Upgrade
+
+Run the install command again to update the GitHub version. No profile-patch maintenance or uninstall is required:
+
+```powershell
+npx -p @deepseek-ai/dsh dsh plugin --profile web add github:JuneLearn/dsh-reasoning-settings
+```
 
 ### Uninstall
 
 ```powershell
-# 1. Remove the plugin package from the DSH Web profile
-dsh plugin --profile web remove dsh-reasoning-settings
-
-# 2. Clean up any stale symlink pnpm may leave behind
-Remove-Item "$env:USERPROFILE\.dsh\profiles\web\node_modules\dsh-reasoning-settings" -Force -Recurse -ErrorAction SilentlyContinue
-
-# 3. Delete the mount entry from cordis.patch.yml (safe to re-run)
-$patch = "$env:USERPROFILE\.dsh\profiles\web\cordis.patch.yml"
-$content = Get-Content $patch -Raw
-if ($content -match '(?ms)\n?- insert:\n\s+- id: ui-settings-reasoning\n\s+name: dsh-reasoning-settings\s*') {
-  Set-Content $patch -Value ($content -replace '(?ms)\n?- insert:\n\s+- id: ui-settings-reasoning\n\s+name: dsh-reasoning-settings\s*', '')
-}
-
-# 4. Delete the cloned directory (optional)
-Remove-Item D:\dsh-reasoning-settings -Recurse -Force
+npx -p @deepseek-ai/dsh dsh plugin --profile web remove dsh-reasoning-settings
 ```
 
-Restart `dsh web`; the **Reasoning effort** settings page is removed.
+DSH removes both the dependency and its bundle layer. Restart `dsh web`; the **Reasoning effort** settings page is removed.
 
 ## Usage
 

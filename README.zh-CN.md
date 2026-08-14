@@ -17,67 +17,49 @@
 
 ## 安装
 
-以下步骤在 PowerShell 中执行，照抄即可。
-
-1. 先运行一次 `dsh web`，确认 Harness 能正常打开，然后停止它（这一步会创建 Web profile 目录）。
-
-2. 克隆本仓库到 `D:\dsh-reasoning-settings`：
+在 PowerShell 中执行一条命令即可从 GitHub 安装并启用插件：
 
 ```powershell
-git clone https://github.com/JuneLearn/dsh-reasoning-settings.git D:\dsh-reasoning-settings
+npx -p @deepseek-ai/dsh dsh plugin --profile web add github:JuneLearn/dsh-reasoning-settings
 ```
 
-3. 把插件安装进 DSH Web profile：
+包内的 `dsh.bundle` 声明会让 DSH 自动把插件加入 Web profile，无需手动编辑 `cordis.patch.yml`。安装完成后运行 `dsh web`，在「设置」中打开「推理强度」。
+
+如需安装本地 checkout，可改用其实际路径：
 
 ```powershell
-dsh plugin --profile web add "D:\dsh-reasoning-settings"
+npx -p @deepseek-ai/dsh dsh plugin --profile web add "D:\dsh-reasoning-settings"
 ```
-
-4. 注册插件到 profile 的 patch 层（已存在则跳过，可重复执行）：
-
-```powershell
-$patch = "$env:USERPROFILE\.dsh\profiles\web\cordis.patch.yml"
-if (-not (Select-String -Path $patch -Pattern 'dsh-reasoning-settings' -Quiet)) {
-  Add-Content $patch "`n- insert:`n    - id: ui-settings-reasoning`n      name: dsh-reasoning-settings"
-}
-```
-
-5. 重新运行 `dsh web`，在「设置」中打开「推理强度」。
 
 `dsh web` 默认使用 `http://127.0.0.1:3080`。端口与插件无关；只有默认端口已被占用，或者启动时显式传入 `--port 3081`，才会使用 3081 等其他端口。
 
-### 升级
+### 从 0.3.0 或更早版本迁移
 
-日后升级只需在克隆目录里拉取最新代码，再执行一次安装命令即可，无需卸载：
+旧版教程要求把 `ui-settings-reasoning` 手动追加到 profile 的 `cordis.patch.yml`。新版安装前，请从该文件中删除下面这段旧挂载项；只需迁移一次，之后由 bundle 自动维护：
 
-```powershell
-git -C D:\dsh-reasoning-settings pull
-dsh plugin --profile web add "D:\dsh-reasoning-settings"
+```yaml
+- insert:
+    - id: ui-settings-reasoning
+      name: dsh-reasoning-settings
 ```
 
-pnpm 会覆盖旧条目，第 4 步的注册命令会自动跳过已存在的条目。
+若文件中除注释外只剩该挂载项，删除后将内容改为 `[]`。
+
+### 升级
+
+再次执行安装命令即可更新 GitHub 版本，无需手动维护 profile patch：
+
+```powershell
+npx -p @deepseek-ai/dsh dsh plugin --profile web add github:JuneLearn/dsh-reasoning-settings
+```
 
 ### 卸载
 
 ```powershell
-# 1. 从 DSH Web profile 移除插件包
-dsh plugin --profile web remove dsh-reasoning-settings
-
-# 2. 清理 pnpm 可能遗留的失效软链
-Remove-Item "$env:USERPROFILE\.dsh\profiles\web\node_modules\dsh-reasoning-settings" -Force -Recurse -ErrorAction SilentlyContinue
-
-# 3. 从 cordis.patch.yml 删除挂载条目（可重复执行）
-$patch = "$env:USERPROFILE\.dsh\profiles\web\cordis.patch.yml"
-$content = Get-Content $patch -Raw
-if ($content -match '(?ms)\n?- insert:\n\s+- id: ui-settings-reasoning\n\s+name: dsh-reasoning-settings\s*') {
-  Set-Content $patch -Value ($content -replace '(?ms)\n?- insert:\n\s+- id: ui-settings-reasoning\n\s+name: dsh-reasoning-settings\s*', '')
-}
-
-# 4. 删除克隆目录（可选）
-Remove-Item D:\dsh-reasoning-settings -Recurse -Force
+npx -p @deepseek-ai/dsh dsh plugin --profile web remove dsh-reasoning-settings
 ```
 
-重启 `dsh web` 后，「设置」中的「推理强度」页即被移除。
+DSH 会同时移除依赖和 bundle 层；重启 `dsh web` 后，「设置」中的「推理强度」页即被移除。
 
 ## 使用
 

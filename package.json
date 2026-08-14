@@ -7,9 +7,13 @@
   "exports": {
     ".": "./lib/index.js",
     "./client": "./lib/client.js",
+    "./cordis.patch.yml": "./cordis.patch.yml",
     "./package.json": "./package.json"
   },
   "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
     "client": {
       "platform": "web",
       "inject": [
@@ -24,6 +28,7 @@
   "license": "MIT",
   "files": [
     "lib",
+    "cordis.patch.yml",
     "README.md",
     "README.zh-CN.md"
   ],

@@ -1,0 +1,4 @@
+# Mount the host and Web client halves of the reasoning settings plugin.
+- insert:
+    - id: ui-settings-reasoning
+      name: dsh-reasoning-settings

@@ -1,4 +1,17 @@
 import assert from 'node:assert/strict'
+import { readFile } from 'node:fs/promises'
+
+const manifest = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'))
+assert.equal(manifest.dsh.bundle.patch, './cordis.patch.yml')
+assert.equal(manifest.exports['./cordis.patch.yml'], './cordis.patch.yml')
+assert.equal(manifest.files.includes('cordis.patch.yml'), true)
+assert.equal(
+  await readFile(new URL('../cordis.patch.yml', import.meta.url), 'utf8'),
+  '# Mount the host and Web client halves of the reasoning settings plugin.\n'
+    + '- insert:\n'
+    + '    - id: ui-settings-reasoning\n'
+    + '      name: dsh-reasoning-settings\n',
+)
 
 let definition
 globalThis.window = {

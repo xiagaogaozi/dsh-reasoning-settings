@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Declared the package as a DSH bundle so `dsh plugin add` automatically mounts the plugin without editing the profile's user patch.
+
 ## [0.3.0] - 2026-08-14
 
 ### Added
