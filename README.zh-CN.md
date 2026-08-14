@@ -17,26 +17,21 @@
 
 ## 安装
 
-### 一键安装（推荐）
+### 前置准备
 
-1. 解压完整插件压缩包，不要只取其中某一个文件。
-2. 先运行一次 `dsh web`，确认 Harness 能正常打开，然后停止它。
-3. 双击解压目录中的 `install.cmd`。
-4. 重新运行 `dsh web`，在“设置”中打开“推理强度”。
-
-安装器会把插件复制到 `~/.dsh/plugins/dsh-reasoning-settings`，然后挂载到当前用户的 DSH Web profile。因此，安装完成后可以删除收到的压缩包和解压目录。
+先运行一次 `dsh web`，确认 Harness 能正常打开，然后停止它。这一步会创建安装器需要写入的 Web profile 目录。
 
 `dsh web` 默认使用 `http://127.0.0.1:3080`。端口与插件无关；只有默认端口已被占用，或者启动时显式传入 `--port 3081`，才会使用 3081 等其他端口。
 
-### 手动安装
+### 使用 `dsh plugin` 安装（推荐）
 
-在 DSH Web profile 中安装本目录并加入插件树：
+用官方 `dsh plugin` 命令把本目录加入 DSH Web profile，它会转发给 pnpm 在 profile 目录内执行安装：
 
 ```powershell
-pnpm --dir "$env:USERPROFILE\.dsh\profiles\web" add "C:\path\to\dsh-reasoning-settings"
+dsh plugin --profile web add "C:\path\to\dsh-reasoning-settings"
 ```
 
-然后在 `~/.dsh/profiles/web/cordis.patch.yml` 中添加：
+然后在 `~/.dsh/profiles/web/cordis.patch.yml` 中注册插件：
 
 ```yaml
 - insert:
@@ -45,6 +40,8 @@ pnpm --dir "$env:USERPROFILE\.dsh\profiles\web" add "C:\path\to\dsh-reasoning-se
 ```
 
 重启 `dsh web` 后，在“设置”中打开“推理强度”。
+
+日后升级时，再次执行同一条 `dsh plugin --profile web add` 命令指向新版本即可，无需卸载，pnpm 会覆盖旧条目。
 
 ## 使用
 

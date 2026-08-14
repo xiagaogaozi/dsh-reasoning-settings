@@ -19,26 +19,21 @@ A [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) Web settin
 
 ## Installation
 
-### One-click (recommended)
+### Prerequisites
 
-1. Extract the full plugin archive — do not take a single file out of it.
-2. Run `dsh web` once, confirm Harness opens, then stop it.
-3. Double-click `install.cmd` in the extracted directory.
-4. Run `dsh web` again and open **Settings > Reasoning effort**.
-
-The installer copies the plugin to `~/.dsh/plugins/dsh-reasoning-settings` and mounts it into your current DSH Web profile, so the archive and extracted directory can be deleted afterwards.
+Run `dsh web` once, confirm Harness opens, then stop it. This creates the Web profile directory the installer writes into.
 
 `dsh web` listens on `http://127.0.0.1:3080` by default. Ports are unrelated to this plugin; another port (e.g. `3081`) is only used when the default one is already taken or you explicitly pass `--port 3081`.
 
-### Manual installation
+### Install with `dsh plugin` (recommended)
 
-Install this directory into your DSH Web profile and add it to the plugin tree:
+Use the official `dsh plugin` command to add this directory into your DSH Web profile. It forwards the package to pnpm inside the profile directory:
 
 ```powershell
-pnpm --dir "$env:USERPROFILE\.dsh\profiles\web" add "C:\path\to\dsh-reasoning-settings"
+dsh plugin --profile web add "C:\path\to\dsh-reasoning-settings"
 ```
 
-Then add the following to `~/.dsh/profiles/web/cordis.patch.yml`:
+Then register the plugin in the profile's patch layer by adding the following to `~/.dsh/profiles/web/cordis.patch.yml`:
 
 ```yaml
 - insert:
@@ -47,6 +42,8 @@ Then add the following to `~/.dsh/profiles/web/cordis.patch.yml`:
 ```
 
 Restart `dsh web`, then open **Settings > Reasoning effort**.
+
+To upgrade later, run the same `dsh plugin --profile web add` command again pointing at the new version — no uninstall is needed, pnpm overwrites the previous entry.
 
 ## Usage
 
