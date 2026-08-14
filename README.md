@@ -17,23 +17,98 @@ A [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) Web settin
 - Resolves model-only child overrides such as `grok-4.5` against user-configured third-party providers instead of an unrelated official provider.
 - Extends the ordinary `subagent` and `subagent_fork` tools with per-call `provider`, `model`, and `reasoning_effort` fields, without replacing their official lifecycle, background, or result behavior.
 
+## Live demo
+
+> **Screenshot placeholder 1: Reasoning effort settings page**
+>
+> Save the image as `assets/screenshots/reasoning-settings-page.png`, then replace this block with:
+>
+> `![Reasoning effort settings page](./assets/screenshots/reasoning-settings-page.png)`
+
+> **Screenshot placeholder 2: Model and reasoning effort picker in a session**
+>
+> Save the image as `assets/screenshots/model-effort-picker.png`, then replace this block with:
+>
+> `![Model and reasoning effort picker](./assets/screenshots/model-effort-picker.png)`
+
+> **Screenshot placeholder 3: Subagent call with a selected provider, model, and effort**
+>
+> Save the image as `assets/screenshots/subagent-routing-demo.png`, then replace this block with:
+>
+> `![Subagent routing demo](./assets/screenshots/subagent-routing-demo.png)`
+
 ## Installation
 
-Install and enable the plugin from GitHub with one PowerShell command:
+### Prerequisites
+
+- Install [Node.js](https://nodejs.org/). DSH currently supports Node.js 22.19.x or version 24 and newer; Node.js 24 LTS is recommended. Node.js includes `npm` and `npx`.
+- Install [Git](https://git-scm.com/) so the plugin can be fetched from its GitHub repository.
+- Install pnpm. Both methods require pnpm because `dsh plugin` invokes it in the profile directory to install or remove plugins.
+- Your network must reach `registry.npmjs.org` and `github.com`. Configure a working network proxy if npm or GitHub is unavailable or unstable in your region.
+- Method 1 does not require a DeepSeek Harness source checkout. Method 2 additionally requires that checkout.
+
+Check the basic environment first:
 
 ```powershell
-npx -p @deepseek-ai/dsh dsh plugin --profile web add github:JuneLearn/dsh-reasoning-settings
+node --version
+npx --version
+git --version
+corepack enable
+pnpm --version
 ```
 
-The package's `dsh.bundle` declaration adds the plugin to the Web profile automatically; do not edit `cordis.patch.yml`. After installation, run `dsh web` and open **Settings > Reasoning effort**.
+If `corepack enable` fails with a permission error, run it once from an Administrator PowerShell. Alternatively, use another option from the [pnpm installation guide](https://pnpm.io/installation).
 
-To install a local checkout, use its actual path instead:
+If downloads remain on a spinner or fail with `ECONNRESET`, `ETIMEDOUT`, or a GitHub connection error, set a proxy for the current PowerShell window. Port `7890` is only an example; replace it with your proxy's actual port:
 
 ```powershell
-npx -p @deepseek-ai/dsh dsh plugin --profile web add "D:\dsh-reasoning-settings"
+$proxy = "http://127.0.0.1:7890"
+$env:HTTP_PROXY = $proxy
+$env:HTTPS_PROXY = $proxy
+$env:npm_config_proxy = $proxy
+$env:npm_config_https_proxy = $proxy
 ```
 
-`dsh web` listens on `http://127.0.0.1:3080` by default. Ports are unrelated to this plugin; another port (e.g. `3081`) is only used when the default one is already taken or you explicitly pass `--port 3081`.
+These variables only affect the current PowerShell window and disappear when it is closed.
+
+### Method 1: npx (recommended for regular users)
+
+This method does not require a DeepSeek Harness source checkout or a global `dsh` installation, but Git and pnpm must already be available. On its first run, `npx` downloads `@deepseek-ai/dsh` and its dependencies, which can take several minutes:
+
+```powershell
+npx --yes -p @deepseek-ai/dsh dsh plugin --profile web add github:JuneLearn/dsh-reasoning-settings
+```
+
+Start Web through the same package runner after installation:
+
+```powershell
+npx --yes -p @deepseek-ai/dsh dsh web
+```
+
+### Method 2: pnpm with the Harness source tree (recommended for developers)
+
+Use this method if you already cloned `deepseek-harness` and want to run its source directly. First confirm pnpm is available:
+
+```powershell
+pnpm --version
+```
+
+Enter the DeepSeek Harness source root. Install its dependencies once, then install the plugin:
+
+```powershell
+cd D:\deepseek-harness
+pnpm install
+pnpm dsh plugin --profile web add github:JuneLearn/dsh-reasoning-settings
+```
+
+Start Web from that source directory afterward:
+
+```powershell
+cd D:\deepseek-harness
+pnpm dsh web
+```
+
+The package's `dsh.bundle` declaration adds the plugin to the Web profile automatically. Neither method requires editing `cordis.patch.yml`. Web listens on `http://127.0.0.1:3080` by default; it uses another port only when the default is occupied or you explicitly select one.
 
 ### Migrating from 0.3.0 or earlier
 
@@ -49,16 +124,34 @@ If no entries remain besides comments, replace the removed entry with `[]`.
 
 ### Upgrade
 
-Run the install command again to update the GitHub version. No profile-patch maintenance or uninstall is required:
+Run the corresponding install command again to upgrade. No uninstall or profile-patch maintenance is required.
+
+npx method:
 
 ```powershell
-npx -p @deepseek-ai/dsh dsh plugin --profile web add github:JuneLearn/dsh-reasoning-settings
+npx --yes -p @deepseek-ai/dsh dsh plugin --profile web add github:JuneLearn/dsh-reasoning-settings
+```
+
+pnpm source method:
+
+```powershell
+cd D:\deepseek-harness
+pnpm dsh plugin --profile web add github:JuneLearn/dsh-reasoning-settings
 ```
 
 ### Uninstall
 
+npx method:
+
 ```powershell
-npx -p @deepseek-ai/dsh dsh plugin --profile web remove dsh-reasoning-settings
+npx --yes -p @deepseek-ai/dsh dsh plugin --profile web remove dsh-reasoning-settings
+```
+
+pnpm source method:
+
+```powershell
+cd D:\deepseek-harness
+pnpm dsh plugin --profile web remove dsh-reasoning-settings
 ```
 
 DSH removes both the dependency and its bundle layer. Restart `dsh web`; the **Reasoning effort** settings page is removed.

@@ -15,23 +15,93 @@
 - 当子 Agent 只指定模型名（例如 `grok-4.5`）时，优先在用户添加的第三方 Provider 模型中解析，而不是错误落到官方 Provider。
 - 为现有 `subagent` 和 `subagent_fork` 工具增加按次 `provider`、`model`、`reasoning_effort` 参数，同时保留官方前台、后台、continuable 和结果格式。
 
+## 实机演示
+
+> **截图占位 1：推理强度设置页**
+>
+> 建议将图片保存为 `assets/screenshots/reasoning-settings-page.png`，然后把本段替换为：
+>
+> `![推理强度设置页](./assets/screenshots/reasoning-settings-page.png)`
+
+> **截图占位 2：会话中的模型与推理强度选择器**
+>
+> 建议将图片保存为 `assets/model-effort-picker.png`，然后把本段替换为：
+> 
+>
+> `![模型与推理强度选择器](./assets/model-effort-picker.png)`
+
 ## 安装
 
-在 PowerShell 中执行一条命令即可从 GitHub 安装并启用插件：
+### 安装前准备
+
+- 安装 [Node.js](https://nodejs.org/)。DSH 当前支持 Node.js 22.19.x 或 24 及以上版本；建议直接使用 Node.js 24 LTS。Node.js 自带 `npm` 和 `npx`。
+- 安装 [Git](https://git-scm.com/)，用于从 GitHub 仓库获取插件。
+- 安装 pnpm。两种方法都需要 pnpm，因为 `dsh plugin` 会在 profile 目录中调用 pnpm 安装或移除插件。
+- 网络需要能够访问 `registry.npmjs.org` 和 `github.com`。若当前网络无法稳定访问 npm 或 GitHub，需要先使用可用的网络代理（也常被称为“科学上网”）。
+- 方法一不需要 DeepSeek Harness 源码；方法二还需要准备好该源码仓库。
+
+可先检查环境：
 
 ```powershell
-npx -p @deepseek-ai/dsh dsh plugin --profile web add github:JuneLearn/dsh-reasoning-settings
+node --version
+npx --version
+git --version
+corepack enable
+pnpm --version
 ```
 
-包内的 `dsh.bundle` 声明会让 DSH 自动把插件加入 Web profile，无需手动编辑 `cordis.patch.yml`。安装完成后运行 `dsh web`，在「设置」中打开「推理强度」。
+如果 `corepack enable` 因权限不足失败，请用管理员身份打开 PowerShell 后再执行一次。也可以根据 [pnpm 官方安装说明](https://pnpm.io/installation)选择其他安装方式。
 
-如需安装本地 checkout，可改用其实际路径：
+如果下载一直停在旋转符号、出现 `ECONNRESET`、`ETIMEDOUT` 或 GitHub 连接失败，可在当前 PowerShell 窗口临时设置代理。下面的 `7890` 只是示例，请改成你自己的代理端口：
 
 ```powershell
-npx -p @deepseek-ai/dsh dsh plugin --profile web add "D:\dsh-reasoning-settings"
+$proxy = "http://127.0.0.1:7890"
+$env:HTTP_PROXY = $proxy
+$env:HTTPS_PROXY = $proxy
+$env:npm_config_proxy = $proxy
+$env:npm_config_https_proxy = $proxy
 ```
 
-`dsh web` 默认使用 `http://127.0.0.1:3080`。端口与插件无关；只有默认端口已被占用，或者启动时显式传入 `--port 3081`，才会使用 3081 等其他端口。
+这些环境变量只对当前 PowerShell 窗口有效，关闭窗口后不会继续生效。
+
+### 方法一：使用 npx（普通用户推荐）
+
+不需要克隆 DeepSeek Harness 源码，也不需要全局安装 `dsh`，但仍需先准备好 Git 和 pnpm。首次运行时，`npx` 会下载 `@deepseek-ai/dsh` 及其依赖，因此可能需要几分钟：
+
+```powershell
+npx --yes -p @deepseek-ai/dsh dsh plugin --profile web add github:JuneLearn/dsh-reasoning-settings
+```
+
+安装完成后，用同一种方式启动 Web：
+
+```powershell
+npx --yes -p @deepseek-ai/dsh dsh web
+```
+
+### 方法二：使用 pnpm 和 Harness 源码（开发者推荐）
+
+这种方法适合已经克隆 `deepseek-harness`、希望直接运行源码的人。先确认 pnpm 可用：
+
+```powershell
+pnpm --version
+```
+
+进入 DeepSeek Harness 源码根目录。第一次使用源码时先安装依赖，然后安装插件：
+
+```powershell
+cd D:\deepseek-harness
+pnpm install
+pnpm dsh plugin --profile web add github:JuneLearn/dsh-reasoning-settings
+```
+
+以后从该源码目录启动 Web：
+
+```powershell
+cd D:\deepseek-harness
+pnpm dsh web
+```
+
+包内的 `dsh.bundle` 声明会让 DSH 自动把插件加入 Web profile；两种安装方式都不需要手动编辑 `cordis.patch.yml`。Web 默认使用 `http://127.0.0.1:3080`；只有该端口已被占用，或显式传入其他端口时，才会使用不同端口。
 
 ### 从 0.3.0 或更早版本迁移
 
@@ -47,16 +117,34 @@ npx -p @deepseek-ai/dsh dsh plugin --profile web add "D:\dsh-reasoning-settings"
 
 ### 升级
 
-再次执行安装命令即可更新 GitHub 版本，无需手动维护 profile patch：
+再次执行对应的安装命令即可升级，无需先卸载，也无需手动维护 profile patch。
+
+npx 方式：
 
 ```powershell
-npx -p @deepseek-ai/dsh dsh plugin --profile web add github:JuneLearn/dsh-reasoning-settings
+npx --yes -p @deepseek-ai/dsh dsh plugin --profile web add github:JuneLearn/dsh-reasoning-settings
+```
+
+pnpm 源码方式：
+
+```powershell
+cd D:\deepseek-harness
+pnpm dsh plugin --profile web add github:JuneLearn/dsh-reasoning-settings
 ```
 
 ### 卸载
 
+npx 方式：
+
 ```powershell
-npx -p @deepseek-ai/dsh dsh plugin --profile web remove dsh-reasoning-settings
+npx --yes -p @deepseek-ai/dsh dsh plugin --profile web remove dsh-reasoning-settings
+```
+
+pnpm 源码方式：
+
+```powershell
+cd D:\deepseek-harness
+pnpm dsh plugin --profile web remove dsh-reasoning-settings
 ```
 
 DSH 会同时移除依赖和 bundle 层；重启 `dsh web` 后，「设置」中的「推理强度」页即被移除。
