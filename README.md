@@ -4,6 +4,10 @@ A [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) Web settin
 
 [中文说明](./README.zh-CN.md)
 
+> **Third-party service recommendation (referral link)**
+>
+> If you are looking for an OpenAI-compatible API relay, you can take a look at [WPIronman API](https://api.wpironman.top/register?aff=JUNE). This is my referral link, and I may receive a referral benefit if you register through it; any promotion or benefit is subject to the provider's current terms. This plugin is independent of that service and does not require any particular relay. Evaluate pricing, reliability, and privacy terms before choosing a provider.
+
 ## Features
 
 - Auto-reads the custom providers and models you already added on the official **Models** page.
