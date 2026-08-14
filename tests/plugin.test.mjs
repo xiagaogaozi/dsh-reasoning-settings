@@ -126,6 +126,59 @@ assert.deepEqual(profiles, [
 assert.equal(server.providerForModel(profiles, 'grok-4.5', 'deepseek-official'), 'relay')
 assert.equal(server.providerForModel(profiles, 'shared', 'backup'), 'backup')
 assert.equal(server.providerForModel(profiles, 'missing', 'relay'), undefined)
+assert.equal(server.targetCatalog(profiles), 'relay/grok-4.5, relay/shared, backup/shared')
+assert.deepEqual(server.delegationTarget({
+  provider: 'relay', model: 'grok-4.5', reasoning_effort: 'max', prompt: 'p',
+}, profiles), { provider: 'relay', model: 'grok-4.5', reasoningEffort: 'max' })
+assert.equal(server.delegationTarget({ prompt: 'p' }, profiles), undefined)
+assert.deepEqual(server.delegationTarget({ reasoning_effort: 'high' }, profiles), { reasoningEffort: 'high' })
+assert.throws(() => server.delegationTarget({ provider: 'relay' }, profiles), /supplied together/)
+assert.throws(() => server.delegationTarget({ provider: 'relay', model: '5.6' }, profiles), /not configured/)
+assert.throws(() => server.delegationTarget({ provider: 'missing', model: 'shared' }, profiles), /unknown configured Provider/)
+assert.deepEqual(server.baseDelegationArgs({ provider: 'relay', model: 'shared', reasoning_effort: 'high', prompt: 'p' }), { prompt: 'p' })
+const targetedSchema = server.targetedParameters({
+  type: 'object', properties: { prompt: { type: 'string' } },
+}, profiles)
+assert.deepEqual(targetedSchema.properties.provider.enum, ['relay', 'backup'])
+assert.deepEqual(targetedSchema.properties.model.enum, ['grok-4.5', 'shared'])
+assert.equal(targetedSchema.properties.reasoning_effort.enum.includes('max'), true)
+
+let delegatedArgs
+let delegatedStore
+const parentForTool = { id: 'parent-tool' }
+const targetContext = {
+  run(store, callback) {
+    delegatedStore = store
+    return callback()
+  },
+}
+const originalTool = {
+  name: 'subagent',
+  description: 'Delegate.',
+  parameters: { type: 'object', properties: { prompt: { type: 'string' } } },
+  output: { schema: { type: 'string' }, render: () => [] },
+  async execute(args) { delegatedArgs = args; return 'ok' },
+}
+const targetedTool = server.targetToolDefinition(originalTool, () => profiles, targetContext)
+assert.match(targetedTool.description, /MUST delegate/)
+assert.equal(await targetedTool.execute({
+  prompt: 'p', provider: 'backup', model: 'shared', reasoning_effort: 'low',
+}, { agent: parentForTool }), 'ok')
+assert.deepEqual(delegatedArgs, { prompt: 'p' })
+assert.deepEqual(delegatedStore, {
+  parent: parentForTool,
+  target: { provider: 'backup', model: 'shared', reasoningEffort: 'low' },
+})
+assert.deepEqual(server.applyDelegationTarget(
+  { provider: 'official', model: 'stale' },
+  { provider: 'relay', model: 'live', reasoningEffort: 'high' },
+  { reasoningEffort: 'max' },
+), { provider: 'relay', model: 'live', reasoningEffort: 'max' })
+assert.deepEqual(server.applyDelegationTarget(
+  { provider: 'official', model: 'stale', reasoningEffort: 'high' },
+  { provider: 'relay', model: 'live', reasoningEffort: 'high' },
+  { provider: 'backup', model: 'shared' },
+), { provider: 'backup', model: 'shared' })
 
 const parentOptions = { provider: 'deepseek-official', model: 'deepseek-v4-flash' }
 const liveParent = { provider: 'relay', model: 'grok-4.5', reasoningEffort: 'high' }
@@ -223,8 +276,8 @@ const parentAgent = {
 }
 const fakeCtx = {
   on(event, listener) {
-    assert.equal(event, 'agent/request')
-    requestListener = listener
+    if (event === 'agent/request') requestListener = listener
+    else assert.equal(event, 'agent/created')
   },
   get(service) {
     if (service === 'agents') return { get: id => id === 'parent' ? parentAgent : undefined }
@@ -252,8 +305,8 @@ assert.deepEqual(await requestListener(
 
 const missingParentCtx = {
   on(event, listener) {
-    assert.equal(event, 'agent/request')
-    requestListener = listener
+    if (event === 'agent/request') requestListener = listener
+    else assert.equal(event, 'agent/created')
   },
   get(service) {
     if (service === 'agents') return { get: () => undefined }

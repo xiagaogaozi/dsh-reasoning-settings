@@ -15,6 +15,7 @@ A [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) Web settin
 - Fixes in-process subagents inheriting the Agent's create-time official model instead of the parent's live third-party provider/model selection.
 - Makes subagents inherit an explicit parent reasoning effort, or fall back to the target provider's configured default effort.
 - Resolves model-only child overrides such as `grok-4.5` against user-configured third-party providers instead of an unrelated official provider.
+- Extends the ordinary `subagent` and `subagent_fork` tools with per-call `provider`, `model`, and `reasoning_effort` fields, without replacing their official lifecycle, background, or result behavior.
 
 ## Installation
 
@@ -64,12 +65,27 @@ The server entry fixes model inheritance for Harness `0.1.0-rc.5` in-process `su
 1. An explicit child `provider + model` route remains authoritative when it differs from the parent's create-time route.
 2. A model-only override is resolved against user-configured third-party providers; duplicate model ids prefer the parent's current provider.
 3. With no child override, the child inherits the parent's live provider/model instead of its create-time official default.
-
-Because the current Subagent start request does not preserve whether a provider/model pair was explicitly supplied when it equals the parent's create-time pair, an explicit child route identical to that pair is indistinguishable from inherited routing and follows the parent's live route.
 4. An explicit child effort remains authoritative; otherwise the parent's effort is inherited only for the same target route.
 5. With no explicit effort, the plugin leaves it absent so `llm-pi-ai` applies the target provider's `reasoning` default.
 
-This affects local in-process children only. Codex, Claude Code, and ACP subagents run in separate processes and retain their own model configuration.
+The plugin also augments the existing model-facing `subagent` and `subagent_fork` tools for each live Agent. Their original arguments remain available, with three optional fields added:
+
+- `provider`: exact configured Provider id;
+- `model`: exact model id owned by that Provider;
+- `reasoning_effort`: optional `off / minimal / low / medium / high / xhigh / max` level.
+
+`provider` and `model` must be supplied together. Omitting both preserves normal inheritance. Omitting `reasoning_effort` after selecting a different route uses that Provider/model's configured default. The tool descriptions enumerate exact configured pairs and instruct the parent model to delegate instead of answering directly when a user requests another Provider/model.
+
+Do not use shorthand such as “the 5.6 model” when multiple exact ids exist. For example, if a Provider contains both `gpt-5.6-sol` and `gpt-5.6-terra`, ask for one exact pair:
+
+```text
+Use subagent with provider=wpironman-gpt, model=gpt-5.6-terra,
+reasoning_effort=max to write a 100-character random essay.
+```
+
+If the requested pair equals the current route, the child still uses that same route, so the result will naturally look like the parent model. The structured tool-call arguments and the child's durable `request/header` are the reliable verification points.
+
+Per-call targeting affects local in-process children only. Codex, Claude Code, and ACP subagents run in separate processes and retain their own model configuration. Workflow retains its own structured `provider`/`model` phase fields and still benefits from the inheritance correction when no phase target is supplied.
 
 All switches default to `true` and may be changed in the plugin mount:
 
@@ -94,7 +110,7 @@ pnpm test   # or: node tests/plugin.test.mjs
 
 ## Compatibility
 
-Built against the public dual-end plugin, settings-slot, `settings.mutate`, and `agent/request` waterfall interfaces of DeepSeek Harness `0.1.0-rc.5`. Harness is still in Developer Preview; if the plugin stops loading or subagent routing changes after an upgrade, check those interfaces and the subagent session metadata.
+Built against the public dual-end plugin, settings-slot, `settings.mutate`, agent-scoped tool shadowing, Agent lifecycle, and `agent/request` waterfall interfaces of DeepSeek Harness `0.1.0-rc.5`. Harness is still in Developer Preview; if the plugin stops loading or subagent routing changes after an upgrade, check those interfaces and the subagent session metadata.
 
 ## License
 

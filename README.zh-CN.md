@@ -13,6 +13,7 @@
 - 修正进程内 Subagent 只继承 Agent 创建时官方模型的问题，使其继承父会话当前实际选择的第三方 Provider 和模型。
 - 子 Agent 优先继承父会话的显式思考强度；未显式选择时，自动使用目标 Provider 配置的默认强度。
 - 当子 Agent 只指定模型名（例如 `grok-4.5`）时，优先在用户添加的第三方 Provider 模型中解析，而不是错误落到官方 Provider。
+- 为现有 `subagent` 和 `subagent_fork` 工具增加按次 `provider`、`model`、`reasoning_effort` 参数，同时保留官方前台、后台、continuable 和结果格式。
 
 ## 安装
 
@@ -62,12 +63,27 @@ pnpm --dir "$env:USERPROFILE\.dsh\profiles\web" add "C:\path\to\dsh-reasoning-se
 1. 子 Agent 显式指定、且不同于父 Agent 创建时路由的 `provider + model` 时，保持显式路由不变。
 2. 只指定模型名时，在官方“模型”页面中由用户配置的第三方 Provider 内查找；同名模型优先使用父会话当前 Provider。
 3. 未指定子模型时，继承父会话当前实际使用的 Provider 和模型，而不是 Agent 创建时的官方默认模型。
-
-当前 Harness 的 Subagent 请求不会记录“provider/model 是否显式传入”。因此，当显式路由恰好等于父 Agent 创建时路由时，插件无法区分它与默认继承，仍会按父会话当前路由处理。
 4. 子 Agent 已有显式思考强度时保持不变；否则仅在目标路由和父会话相同时继承父会话强度。
 5. 仍未获得显式强度时不强行注入参数，由 `llm-pi-ai` 使用该 Provider 的 `reasoning` 默认强度。
 
-该修正仅作用于 Harness 内部进程内子 Agent。独立进程的 Codex、Claude Code、ACP 子 Agent 使用各自的模型配置，不经过此插件的 `agent/request` 路由。
+插件还会在每个活跃 Agent 范围内增强原有 `subagent` 和 `subagent_fork` 工具。原参数完全保留，新增三个可选字段：
+
+- `provider`：精确的已配置 Provider ID；
+- `model`：属于该 Provider 的精确模型 ID；
+- `reasoning_effort`：可选 `off / minimal / low / medium / high / xhigh / max`。
+
+`provider` 和 `model` 必须同时传入；两者都省略时保持普通继承逻辑。选择了不同路由但未传 `reasoning_effort` 时，使用目标 Provider/模型配置的默认强度。工具说明会列出准确可选组合，并要求父模型在用户指定其他 Provider/模型时真正发起委派，不能由当前模型直接代答。
+
+不要在存在多个精确 ID 时只说“5.6 模型”。例如某 Provider 同时有 `gpt-5.6-sol` 和 `gpt-5.6-terra`，应明确要求：
+
+```text
+调用 subagent，provider=wpironman-gpt，model=gpt-5.6-terra，
+reasoning_effort=max，写一篇百字随机小作文。
+```
+
+如果指定组合和当前路由相同，子 Agent 当然仍会使用相同模型，因此回答风格看起来也会相同。可靠的核验点是结构化工具调用参数及子会话持久化的 `request/header`，而不是让模型自报身份。
+
+按次指定只作用于 Harness 内部进程内子 Agent。独立进程的 Codex、Claude Code、ACP 使用各自的模型配置。Workflow 继续使用自身 phase 的结构化 `provider`/`model` 字段；未指定 phase 目标时仍可受益于本插件的继承修正。
 
 可在插件挂载配置中关闭或细调服务端修正：
 
@@ -86,4 +102,4 @@ pnpm --dir "$env:USERPROFILE\.dsh\profiles\web" add "C:\path\to\dsh-reasoning-se
 
 ## 兼容性
 
-基于 DeepSeek Harness `0.1.0-rc.5` 的公开双端插件、设置槽、`settings.mutate` 和 `agent/request` waterfall 接口开发。Harness 仍处于 Developer Preview；升级后若插件未加载或子 Agent 路由异常，请先检查上述接口及 Subagent 会话元数据是否发生变化。
+基于 DeepSeek Harness `0.1.0-rc.5` 的公开双端插件、设置槽、`settings.mutate`、Agent 作用域工具覆盖、Agent 生命周期和 `agent/request` waterfall 接口开发。Harness 仍处于 Developer Preview；升级后若插件未加载或子 Agent 路由异常，请先检查上述接口及 Subagent 会话元数据是否发生变化。
