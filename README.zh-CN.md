@@ -57,6 +57,25 @@ dsh plugin --profile web add "D:\dsh-reasoning-settings"
 
 pnpm 会覆盖旧条目，第 4 步的注册命令会自动跳过已存在的条目。
 
+### 卸载
+
+```powershell
+# 1. 从 DSH Web profile 移除插件包
+dsh plugin --profile web remove dsh-reasoning-settings
+
+# 2. 从 cordis.patch.yml 删除挂载条目（可重复执行）
+$patch = "$env:USERPROFILE\.dsh\profiles\web\cordis.patch.yml"
+$content = Get-Content $patch -Raw
+if ($content -match '(?ms)\n?- insert:\n\s+- id: ui-settings-reasoning\n\s+name: dsh-reasoning-settings\s*') {
+  Set-Content $patch -Value ($content -replace '(?ms)\n?- insert:\n\s+- id: ui-settings-reasoning\n\s+name: dsh-reasoning-settings\s*', '')
+}
+
+# 3. 删除克隆目录（可选）
+Remove-Item D:\dsh-reasoning-settings -Recurse -Force
+```
+
+重启 `dsh web` 后，「设置」中的「推理强度」页即被移除。
+
 ## 使用
 
 1. 先在官方“模型”页面添加自定义 Provider 和模型。
