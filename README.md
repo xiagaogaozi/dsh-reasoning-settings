@@ -21,15 +21,15 @@ A [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) Web settin
 
 > **Screenshot placeholder 1: Reasoning effort settings page**
 >
-> Save the image as `assets/screenshots/reasoning-settings-page.png`, then replace this block with:
+> The current repository image is `assets/reasoning-settings-page.png`:
 >
-> `![Reasoning effort settings page](./assets/screenshots/reasoning-settings-page.png)`
+> ![Reasoning effort settings page](./assets/reasoning-settings-page.png)
 
 > **Screenshot placeholder 2: Model and reasoning effort picker in a session**
 >
-> Save the image as `assets/screenshots/model-effort-picker.png`, then replace this block with:
+> The current repository image is `assets/model-effort-picker.png`:
 >
-> `![Model and reasoning effort picker](./assets/screenshots/model-effort-picker.png)`
+> ![Model and reasoning effort picker](./assets/model-effort-picker.png)
 
 > **Screenshot placeholder 3: Subagent call with a selected provider, model, and effort**
 >

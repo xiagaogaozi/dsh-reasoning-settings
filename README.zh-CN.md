@@ -19,16 +19,16 @@
 
 > **截图占位 1：推理强度设置页**
 >
-> 建议将图片保存为 `assets/screenshots/reasoning-settings-page.png`，然后把本段替换为：
+> 当前仓库中的实机截图为 `assets/reasoning-settings-page.png`：
 >
-> `![推理强度设置页](./assets/screenshots/reasoning-settings-page.png)`
+> ![推理强度设置页](./assets/reasoning-settings-page.png)
 
 > **截图占位 2：会话中的模型与推理强度选择器**
 >
-> 建议将图片保存为 `assets/model-effort-picker.png`，然后把本段替换为：
-> 
+> 当前仓库中的实机截图为 `assets/model-effort-picker.png`：
 >
-> `![模型与推理强度选择器](./assets/model-effort-picker.png)`
+>
+> ![模型与推理强度选择器](./assets/model-effort-picker.png)
 
 ## 安装
 
