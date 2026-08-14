@@ -65,14 +65,17 @@ pnpm overwrites the previous entry, and the step 4 registration command automati
 # 1. Remove the plugin package from the DSH Web profile
 dsh plugin --profile web remove dsh-reasoning-settings
 
-# 2. Delete the mount entry from cordis.patch.yml (safe to re-run)
+# 2. Clean up any stale symlink pnpm may leave behind
+Remove-Item "$env:USERPROFILE\.dsh\profiles\web\node_modules\dsh-reasoning-settings" -Force -Recurse -ErrorAction SilentlyContinue
+
+# 3. Delete the mount entry from cordis.patch.yml (safe to re-run)
 $patch = "$env:USERPROFILE\.dsh\profiles\web\cordis.patch.yml"
 $content = Get-Content $patch -Raw
 if ($content -match '(?ms)\n?- insert:\n\s+- id: ui-settings-reasoning\n\s+name: dsh-reasoning-settings\s*') {
   Set-Content $patch -Value ($content -replace '(?ms)\n?- insert:\n\s+- id: ui-settings-reasoning\n\s+name: dsh-reasoning-settings\s*', '')
 }
 
-# 3. Delete the cloned directory (optional)
+# 4. Delete the cloned directory (optional)
 Remove-Item D:\dsh-reasoning-settings -Recurse -Force
 ```
 

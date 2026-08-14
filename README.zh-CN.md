@@ -63,14 +63,17 @@ pnpm 会覆盖旧条目，第 4 步的注册命令会自动跳过已存在的条
 # 1. 从 DSH Web profile 移除插件包
 dsh plugin --profile web remove dsh-reasoning-settings
 
-# 2. 从 cordis.patch.yml 删除挂载条目（可重复执行）
+# 2. 清理 pnpm 可能遗留的失效软链
+Remove-Item "$env:USERPROFILE\.dsh\profiles\web\node_modules\dsh-reasoning-settings" -Force -Recurse -ErrorAction SilentlyContinue
+
+# 3. 从 cordis.patch.yml 删除挂载条目（可重复执行）
 $patch = "$env:USERPROFILE\.dsh\profiles\web\cordis.patch.yml"
 $content = Get-Content $patch -Raw
 if ($content -match '(?ms)\n?- insert:\n\s+- id: ui-settings-reasoning\n\s+name: dsh-reasoning-settings\s*') {
   Set-Content $patch -Value ($content -replace '(?ms)\n?- insert:\n\s+- id: ui-settings-reasoning\n\s+name: dsh-reasoning-settings\s*', '')
 }
 
-# 3. 删除克隆目录（可选）
+# 4. 删除克隆目录（可选）
 Remove-Item D:\dsh-reasoning-settings -Recurse -Force
 ```
 
