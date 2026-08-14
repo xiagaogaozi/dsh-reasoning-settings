@@ -17,31 +17,45 @@
 
 ## 安装
 
-### 前置准备
+以下步骤在 PowerShell 中执行，照抄即可。
 
-先运行一次 `dsh web`，确认 Harness 能正常打开，然后停止它。这一步会创建安装器需要写入的 Web profile 目录。
+1. 先运行一次 `dsh web`，确认 Harness 能正常打开，然后停止它（这一步会创建 Web profile 目录）。
+
+2. 克隆本仓库到 `D:\dsh-reasoning-settings`：
+
+```powershell
+git clone https://github.com/JuneLearn/dsh-reasoning-settings.git D:\dsh-reasoning-settings
+```
+
+3. 把插件安装进 DSH Web profile：
+
+```powershell
+dsh plugin --profile web add "D:\dsh-reasoning-settings"
+```
+
+4. 注册插件到 profile 的 patch 层（已存在则跳过，可重复执行）：
+
+```powershell
+$patch = "$env:USERPROFILE\.dsh\profiles\web\cordis.patch.yml"
+if (-not (Select-String -Path $patch -Pattern 'dsh-reasoning-settings' -Quiet)) {
+  Add-Content $patch "`n- insert:`n    - id: ui-settings-reasoning`n      name: dsh-reasoning-settings"
+}
+```
+
+5. 重新运行 `dsh web`，在「设置」中打开「推理强度」。
 
 `dsh web` 默认使用 `http://127.0.0.1:3080`。端口与插件无关；只有默认端口已被占用，或者启动时显式传入 `--port 3081`，才会使用 3081 等其他端口。
 
-### 使用 `dsh plugin` 安装（推荐）
+### 升级
 
-用官方 `dsh plugin` 命令把本目录加入 DSH Web profile，它会转发给 pnpm 在 profile 目录内执行安装：
+日后升级只需在克隆目录里拉取最新代码，再执行一次安装命令即可，无需卸载：
 
 ```powershell
-dsh plugin --profile web add "C:\path\to\dsh-reasoning-settings"
+git -C D:\dsh-reasoning-settings pull
+dsh plugin --profile web add "D:\dsh-reasoning-settings"
 ```
 
-然后在 `~/.dsh/profiles/web/cordis.patch.yml` 中注册插件：
-
-```yaml
-- insert:
-    - id: ui-settings-reasoning
-      name: dsh-reasoning-settings
-```
-
-重启 `dsh web` 后，在“设置”中打开“推理强度”。
-
-日后升级时，再次执行同一条 `dsh plugin --profile web add` 命令指向新版本即可，无需卸载，pnpm 会覆盖旧条目。
+pnpm 会覆盖旧条目，第 4 步的注册命令会自动跳过已存在的条目。
 
 ## 使用
 

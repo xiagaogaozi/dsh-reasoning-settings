@@ -19,31 +19,45 @@ A [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) Web settin
 
 ## Installation
 
-### Prerequisites
+Run the following steps in PowerShell — copy and paste as-is.
 
-Run `dsh web` once, confirm Harness opens, then stop it. This creates the Web profile directory the installer writes into.
+1. Run `dsh web` once, confirm Harness opens, then stop it (this creates the Web profile directory).
+
+2. Clone this repository to `D:\dsh-reasoning-settings`:
+
+```powershell
+git clone https://github.com/JuneLearn/dsh-reasoning-settings.git D:\dsh-reasoning-settings
+```
+
+3. Install the plugin into your DSH Web profile:
+
+```powershell
+dsh plugin --profile web add "D:\dsh-reasoning-settings"
+```
+
+4. Register the plugin in the profile's patch layer (skips if already present, safe to re-run):
+
+```powershell
+$patch = "$env:USERPROFILE\.dsh\profiles\web\cordis.patch.yml"
+if (-not (Select-String -Path $patch -Pattern 'dsh-reasoning-settings' -Quiet)) {
+  Add-Content $patch "`n- insert:`n    - id: ui-settings-reasoning`n      name: dsh-reasoning-settings"
+}
+```
+
+5. Run `dsh web` again and open **Settings > Reasoning effort**.
 
 `dsh web` listens on `http://127.0.0.1:3080` by default. Ports are unrelated to this plugin; another port (e.g. `3081`) is only used when the default one is already taken or you explicitly pass `--port 3081`.
 
-### Install with `dsh plugin` (recommended)
+### Upgrade
 
-Use the official `dsh plugin` command to add this directory into your DSH Web profile. It forwards the package to pnpm inside the profile directory:
+To upgrade later, pull the latest code in the cloned directory and run the install command again — no uninstall is needed:
 
 ```powershell
-dsh plugin --profile web add "C:\path\to\dsh-reasoning-settings"
+git -C D:\dsh-reasoning-settings pull
+dsh plugin --profile web add "D:\dsh-reasoning-settings"
 ```
 
-Then register the plugin in the profile's patch layer by adding the following to `~/.dsh/profiles/web/cordis.patch.yml`:
-
-```yaml
-- insert:
-    - id: ui-settings-reasoning
-      name: dsh-reasoning-settings
-```
-
-Restart `dsh web`, then open **Settings > Reasoning effort**.
-
-To upgrade later, run the same `dsh plugin --profile web add` command again pointing at the new version — no uninstall is needed, pnpm overwrites the previous entry.
+pnpm overwrites the previous entry, and the step 4 registration command automatically skips an already-present entry.
 
 ## Usage
 
