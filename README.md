@@ -12,6 +12,9 @@ A [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) Web settin
 - Sets a provider-wide default effort, restricted to the levels supported by every model in that provider.
 - Configures the reasoning wire format for `openai-completions` providers.
 - Writes back to `llm-pi-ai.providers.*` through the official `settings.mutate` API — API keys are never touched.
+- Fixes in-process subagents inheriting the Agent's create-time official model instead of the parent's live third-party provider/model selection.
+- Makes subagents inherit an explicit parent reasoning effort, or fall back to the target provider's configured default effort.
+- Resolves model-only child overrides such as `grok-4.5` against user-configured third-party providers instead of an unrelated official provider.
 
 ## Installation
 
@@ -54,6 +57,35 @@ Restart `dsh web`, then open **Settings > Reasoning effort**.
 
 The plugin only declares which effort levels Harness may select and send. Whether the relay API actually honors a value is up to the relay: if a request comes back with HTTP 400, uncheck the levels that model does not support or adjust their wire values.
 
+## Subagent routing and reasoning
+
+The server entry fixes model inheritance for Harness `0.1.0-rc.5` in-process `subagent`, `subagent_fork`, and Workflow children:
+
+1. An explicit child `provider + model` route remains authoritative when it differs from the parent's create-time route.
+2. A model-only override is resolved against user-configured third-party providers; duplicate model ids prefer the parent's current provider.
+3. With no child override, the child inherits the parent's live provider/model instead of its create-time official default.
+
+Because the current Subagent start request does not preserve whether a provider/model pair was explicitly supplied when it equals the parent's create-time pair, an explicit child route identical to that pair is indistinguishable from inherited routing and follows the parent's live route.
+4. An explicit child effort remains authoritative; otherwise the parent's effort is inherited only for the same target route.
+5. With no explicit effort, the plugin leaves it absent so `llm-pi-ai` applies the target provider's `reasoning` default.
+
+This affects local in-process children only. Codex, Claude Code, and ACP subagents run in separate processes and retain their own model configuration.
+
+All switches default to `true` and may be changed in the plugin mount:
+
+```yaml
+- insert:
+    - id: ui-settings-reasoning
+      name: dsh-reasoning-settings
+      config:
+        subagentRouting: true
+        inheritRoute: true
+        resolveModelOnly: true
+        inheritReasoning: true
+```
+
+Set `subagentRouting: false` to disable the entire server-side correction.
+
 ## Development
 
 ```powershell
@@ -62,7 +94,7 @@ pnpm test   # or: node tests/plugin.test.mjs
 
 ## Compatibility
 
-Built against the public dual-end plugin, settings-slot and `settings.mutate` interfaces of DeepSeek Harness `0.1.0-rc.5`. Harness is still in Developer Preview; if the plugin stops loading after an upgrade, check whether those interfaces changed.
+Built against the public dual-end plugin, settings-slot, `settings.mutate`, and `agent/request` waterfall interfaces of DeepSeek Harness `0.1.0-rc.5`. Harness is still in Developer Preview; if the plugin stops loading or subagent routing changes after an upgrade, check those interfaces and the subagent session metadata.
 
 ## License
 

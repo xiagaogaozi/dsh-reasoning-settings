@@ -1,7 +1,7 @@
 {
   "name": "dsh-reasoning-settings",
-  "version": "0.1.0",
-  "description": "Per-model reasoning effort settings for DeepSeek Harness custom providers",
+  "version": "0.2.0",
+  "description": "Reasoning effort settings and subagent routing for DeepSeek Harness custom providers",
   "type": "module",
   "main": "lib/index.js",
   "exports": {

@@ -7,7 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- Initial public release preparation: LICENSE, .gitignore, bilingual README.
+## [0.2.0] - 2026-08-14
+
+### Added
+
+- Server-side routing correction for in-process Subagent, Subagent Fork, and Workflow children.
+- Model-only child override resolution against user-configured third-party `llm-pi-ai` providers.
+- Parent reasoning-effort inheritance for same-route children, with provider-default fallback.
+- Unit and real Harness integration coverage for child request headers and adapter dispatch.
+
+### Changed
+
+- Expanded bilingual documentation for Subagent behavior and configuration switches.
 
 ## [0.1.0] - 2026-08-13
 
