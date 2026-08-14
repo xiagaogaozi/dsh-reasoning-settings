@@ -1,0 +1,33 @@
+{
+  "name": "dsh-reasoning-settings",
+  "version": "0.1.0",
+  "description": "Per-model reasoning effort settings for DeepSeek Harness custom providers",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./lib/client.js",
+    "./package.json": "./package.json"
+  },
+  "dsh": {
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-runtime",
+        "@deepseek-ai/dsh-client-ui-settings",
+        "@deepseek-ai/dsh-client-locale",
+        "@deepseek-ai/dsh-client-connection",
+        "@deepseek-ai/dsh-api-remotes"
+      ]
+    }
+  },
+  "license": "MIT",
+  "files": [
+    "lib",
+    "README.md",
+    "README.zh-CN.md"
+  ],
+  "scripts": {
+    "test": "node tests/plugin.test.mjs"
+  }
+}
