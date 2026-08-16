@@ -7,6 +7,8 @@ A [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) Web settin
 > **Third-party service recommendation (referral link)**
 >
 > If you are looking for an OpenAI-compatible API relay, you can take a look at [WPIronman API](https://api.wpironman.top/register?aff=JUNE). This is my referral link, and I may receive a referral benefit if you register through it; any promotion or benefit is subject to the provider's current terms. This plugin is independent of that service and does not require any particular relay. Evaluate pricing, reliability, and privacy terms before choosing a provider.
+>
+> New users can redeem the gift quota with code `99F509ABC6C38F77`.
 
 ## Features
 
