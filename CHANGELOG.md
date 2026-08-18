@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Declared the package as a DSH bundle so `dsh plugin add` automatically mounts the plugin without editing the profile's user patch.
+- Registered the Web settings card with the `llm-pi-ai` key required by DeepSeek Harness rc.7's keyed plugin-settings slot.
 
 ## [0.3.0] - 2026-08-14
 

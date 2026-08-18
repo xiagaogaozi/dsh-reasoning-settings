@@ -42,6 +42,37 @@ const plugin = definition.factory((id) => {
 })
 const test = plugin.__test
 
+// The rc.7 plugin settings directory declares this slot as keyed. The card
+// edits the llm-pi-ai settings namespace, so its registration must use that
+// namespace as the key instead of the legacy list-slot id/order identity.
+let registeredSettingsCard
+const clientCtx = {
+  effect(callback) { return callback() },
+  locale: {
+    register() {},
+    bind() { return () => '' },
+  },
+  remote: {},
+  get(service) {
+    assert.equal(service, 'connection')
+    return { api: {} }
+  },
+  slots: {
+    inject(name, callback) {
+      assert.equal(name, 'settings.plugin.item')
+      return callback()
+    },
+    register(options) {
+      if (options.name === 'settings.plugin.item' && options.key === undefined) {
+        throw new Error(`keyed slot "${options.name}" requires options.key`)
+      }
+      registeredSettingsCard = options
+    },
+  },
+}
+plugin.apply(clientCtx)
+assert.equal(registeredSettingsCard.key, 'llm-pi-ai')
+
 const drafts = test.providerDrafts({
   revision: 2,
   value: {
